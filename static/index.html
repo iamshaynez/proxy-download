@@ -19,7 +19,7 @@
         }
         
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
         }
         
@@ -146,29 +146,171 @@
             cursor: not-allowed;
         }
         
-        .status-msg {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 4px;
-            display: none;
+        /* 下载任务列表 */
+        .tasks-list {
+            margin-top: 20px;
         }
         
-        .status-msg.success {
-            background: #d4edda;
-            color: #155724;
-            display: block;
+        .task-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
         }
         
-        .status-msg.error {
-            background: #f8d7da;
-            color: #721c24;
-            display: block;
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
         
-        .status-msg.loading {
+        .task-url {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #666;
+            font-size: 13px;
+            margin-right: 10px;
+        }
+        
+        .task-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-pending {
             background: #fff3cd;
             color: #856404;
-            display: block;
+        }
+        
+        .status-downloading {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-compressing {
+            background: #e2e3f3;
+            color: #383d74;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* 进度条 */
+        .progress-container {
+            margin: 10px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #34ce57);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-fill.indeterminate {
+            background: linear-gradient(90deg, #007bff 0%, #7ec8ff 50%, #007bff 100%);
+            background-size: 200% 100%;
+            animation: progress-animation 1.5s infinite;
+        }
+        
+        @keyframes progress-animation {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 任务操作按钮 */
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .btn-retry {
+            padding: 6px 14px;
+            background: #ffc107;
+            color: #212529;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .btn-retry:hover {
+            background: #e0a800;
+        }
+        
+        .btn-cancel {
+            padding: 6px 14px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+        
+        .btn-open {
+            padding: 6px 14px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-open:hover {
+            background: #0056b3;
+        }
+        
+        .error-detail {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #f8d7da;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #721c24;
         }
         
         /* 文件列表 */
@@ -258,21 +400,37 @@
             background: #c82333;
         }
         
-        /* 加载动画 */
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #333;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 8px;
+        /* 连接状态 */
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #666;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-dot.connected {
+            background: #28a745;
+        }
+        
+        .status-dot.disconnected {
+            background: #dc3545;
+        }
+        
+        .status-dot.connecting {
+            background: #ffc107;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
     </style>
 </head>
@@ -290,7 +448,13 @@
         <div class="main-content" id="mainContent">
             <div class="header">
                 <h1>📥 代理下载</h1>
-                <button class="logout-btn" onclick="logout()">退出登录</button>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="connection-status">
+                        <span class="status-dot connecting" id="statusDot"></span>
+                        <span id="statusText">连接中...</span>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">退出登录</button>
+                </div>
             </div>
             
             <!-- 下载区域 -->
@@ -300,7 +464,9 @@
                     <input type="text" id="urlInput" placeholder="输入文件下载 URL..." onkeypress="if(event.key==='Enter')startDownload()">
                     <button id="downloadBtn" onclick="startDownload()">开始下载</button>
                 </div>
-                <div class="status-msg" id="statusMsg"></div>
+                
+                <!-- 下载任务列表 -->
+                <div class="tasks-list" id="tasksList"></div>
             </div>
             
             <!-- 文件列表 -->
