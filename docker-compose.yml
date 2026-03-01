@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  proxy-download:
+    build: .
+    container_name: proxy-download
+    ports:
+      - "5000:5000"
+    environment:
+      - ACCESS_PASSWORD=${ACCESS_PASSWORD:-admin123}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-here}
+    volumes:
+      - ./downloads:/app/downloads
+    restart: unless-stopped
