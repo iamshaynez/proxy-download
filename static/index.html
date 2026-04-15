@@ -465,6 +465,15 @@
                     <button id="downloadBtn" onclick="startDownload()">开始下载</button>
                 </div>
                 
+                <!-- 本地上传 -->
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                    <h3 style="margin-bottom: 15px; color: #333;">本地上传</h3>
+                    <div class="input-group">
+                        <input type="file" id="fileInput" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <button id="uploadBtn" onclick="uploadFile()">上传文件</button>
+                    </div>
+                </div>
+                
                 <!-- 下载任务列表 -->
                 <div class="tasks-list" id="tasksList"></div>
             </div>

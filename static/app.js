@@ -366,6 +366,47 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ==================== 文件上传 ====================
+
+async function uploadFile() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('请选择文件');
+        return;
+    }
+    
+    const btn = document.getElementById('uploadBtn');
+    btn.disabled = true;
+    btn.textContent = '上传中...';
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/upload`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            fileInput.value = '';
+            loadFiles();
+        } else {
+            alert(data.error || '上传失败');
+        }
+    } catch (err) {
+        alert('上传失败: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '上传文件';
+    }
+}
+
 // ==================== 文件列表 ====================
 
 async function loadFiles() {

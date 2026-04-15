@@ -363,6 +363,51 @@ def download_with_progress(task_id, url, ws):
 
 # ==================== HTTP API ====================
 
+@app.route('/api/upload', methods=['POST'])
+@require_auth
+def upload_file():
+    """上传本地文件"""
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    if not file or not file.filename:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    original_filename = secure_filename(file.filename)
+    if not original_filename:
+        return jsonify({'error': 'Invalid filename'}), 400
+    
+    task_id = str(uuid.uuid4())[:8]
+    is_zip = original_filename.lower().endswith('.zip')
+    
+    try:
+        if is_zip:
+            final_filename = f"{task_id}_{original_filename}"
+            if not final_filename.lower().endswith('.zip'):
+                final_filename += '.zip'
+            final_path = DOWNLOAD_DIR / final_filename
+            file.save(str(final_path))
+        else:
+            temp_path = TEMP_DIR / f"{task_id}_upload_temp"
+            file.save(str(temp_path))
+            
+            final_filename = f"{task_id}_{original_filename}.zip"
+            final_path = DOWNLOAD_DIR / final_filename
+            
+            with zipfile.ZipFile(final_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+                zf.write(temp_path, original_filename)
+            
+            temp_path.unlink()
+        
+        return jsonify({
+            'success': True,
+            'filename': final_filename
+        })
+    except Exception as e:
+        return jsonify({'error': f'Upload failed: {str(e)}'}), 500
+
+
 @app.route('/api/download', methods=['POST'])
 @require_auth
 def download_file():
