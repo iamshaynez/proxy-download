@@ -25,8 +25,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.ACR_REGISTRY }}/girlboss/down:${{ github.sha }}
-            ${{ secrets.ACR_REGISTRY }}/girlboss/down:main
+            ${{ secrets.ACR_REGISTRY }}/xiaowenz/down:${{ github.sha }}
+            ${{ secrets.ACR_REGISTRY }}/xiaowenz/down:main
 
       - name: 部署到测试机(本机)
         run: |
