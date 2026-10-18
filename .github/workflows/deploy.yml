@@ -1,0 +1,44 @@
+# 合并 main 即发布(本仓库单分支模型):构建 down 镜像推 ACR 并部署测试机。
+# 构建机 hk-build 与部署目标同机;纪律:shell 登录/pull 重试/冒烟轮询。
+name: deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-deploy:
+    runs-on: [self-hosted, hk-build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 登录 ACR(重试抗瞬断)
+        run: |
+          for i in 1 2 3 4 5; do
+            echo "${{ secrets.ACR_PASSWORD }}" | docker login "${{ secrets.ACR_REGISTRY }}" -u "${{ secrets.ACR_USERNAME }}" --password-stdin && break
+            echo "login 失败,第 $i 次重试"; sleep 5
+          done
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.ACR_REGISTRY }}/girlboss/down:${{ github.sha }}
+            ${{ secrets.ACR_REGISTRY }}/girlboss/down:main
+
+      - name: 部署到测试机(本机)
+        run: |
+          cd /opt/apps/down
+          for i in 1 2 3; do docker compose pull && break; echo "pull 失败,第 $i 次重试"; sleep 8; done
+          docker compose up -d
+
+      - name: 冒烟验证(轮询)
+        run: |
+          for i in $(seq 15); do
+            C=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18087/ || true)
+            case "$C" in 200|302|401) echo "down 就绪($C,第 $i 轮)"; exit 0;; esac
+            sleep 3
+          done
+          echo "down 未就绪"; docker logs down --tail 20; exit 1
